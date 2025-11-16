@@ -1,68 +1,97 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Turbojet + Afterburner Cycle Explorer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Chart.js CDN for plotting -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: system-ui, sans-serif;
       margin: 0;
       padding: 0;
       background: #0f172a;
       color: #e5e7eb;
     }
+
     header {
       padding: 1rem 2rem;
       background: #020617;
       border-bottom: 1px solid #1f2937;
     }
+
     header h1 {
       margin: 0;
-      font-size: 1.3rem;
+      font-size: 1.35rem;
     }
+
     main {
       display: flex;
       flex-wrap: wrap;
-      padding: 1rem 2rem 2rem 2rem;
+      padding: 1rem 2rem 2rem;
       gap: 1.5rem;
     }
+
     .card {
       background: #020617;
       border: 1px solid #1f2937;
       border-radius: 0.75rem;
       padding: 1rem 1.25rem;
-      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.9);
+      box-shadow: 0 10px 25px rgba(15,23,42,0.9);
     }
+
     .inputs {
       flex: 1 1 320px;
       max-width: 380px;
     }
+
     .plots {
-      flex: 3 1 500px;
+      flex: 3 1 760px;
       min-width: 0;
     }
-    .inputs h2, .plots h2 {
-      margin-top: 0;
-      font-size: 1.1rem;
-      margin-bottom: 0.5rem;
+
+    .plot-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      align-items: start;
+      margin-top: 1rem;
     }
+
+    @media (max-width: 900px) {
+      .plot-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    canvas {
+      width: 100% !important;
+      height: 400px !important;
+      background: #020617;
+      border-radius: 0.75rem;
+      border: 1px solid #1f2937;
+      padding: 0.5rem;
+    }
+
     .input-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 0.6rem 0.8rem;
       font-size: 0.85rem;
     }
+
     .input-group {
       display: flex;
       flex-direction: column;
       gap: 0.15rem;
     }
+
     label {
       color: #9ca3af;
     }
+
     input {
       background: #020617;
       border-radius: 0.5rem;
@@ -71,16 +100,12 @@
       padding: 0.3rem 0.4rem;
       font-size: 0.85rem;
     }
+
     input:focus {
       outline: 2px solid #38bdf8;
-      outline-offset: 1px;
       border-color: #38bdf8;
     }
-    .button-row {
-      margin-top: 0.9rem;
-      display: flex;
-      gap: 0.5rem;
-    }
+
     button {
       background: #38bdf8;
       border: none;
@@ -91,157 +116,105 @@
       color: #020617;
       font-weight: 600;
     }
+
+    .button-row {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.6rem;
+    }
+
     button.secondary {
       background: transparent;
       color: #e5e7eb;
       border: 1px solid #4b5563;
     }
+
     button:hover {
       filter: brightness(1.1);
     }
-    .plot-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1rem;
-    }
-    canvas {
-      background: #020617;
-      border-radius: 0.75rem;
-      border: 1px solid #1f2937;
-      padding: 0.5rem;
-    }
+
     .note {
       font-size: 0.75rem;
       color: #9ca3af;
-      margin-top: 0.5rem;
-    }
-    @media (max-width: 900px) {
-      main {
-        padding: 1rem;
-      }
+      margin-top: 0.4rem;
     }
   </style>
 </head>
+
 <body>
   <header>
     <h1>Turbojet / Afterburner Performance Explorer</h1>
   </header>
 
   <main>
-    <!-- INPUTS CARD -->
+    <!-- INPUT PANEL -->
     <section class="card inputs">
       <h2>Inputs</h2>
-      <p class="note">
-        Edit values and click <strong>Run Analysis</strong>. Defaults are from your assignment.
-      </p>
+      <p class="note">Modify values and click <b>Run Analysis</b>.</p>
+
       <div class="input-grid">
-        <!-- Flight / Ambient -->
         <div class="input-group">
-          <label for="Pamb">P<sub>amb</sub> [Pa]</label>
-          <input id="Pamb" type="number" step="1" value="12112" />
+          <label>P<sub>amb</sub> [Pa]</label>
+          <input id="Pamb" value="12112">
         </div>
         <div class="input-group">
-          <label for="Tamb">T<sub>amb</sub> [K]</label>
-          <input id="Tamb" type="number" step="0.01" value="216.65" />
+          <label>T<sub>amb</sub> [K]</label>
+          <input id="Tamb" value="216.65">
         </div>
         <div class="input-group">
-          <label for="Mach">Mach</label>
-          <input id="Mach" type="number" step="0.01" value="1.8" />
+          <label>Mach</label>
+          <input id="Mach" value="1.8">
         </div>
         <div class="input-group">
-          <label for="R">R [J/(kg·K)]</label>
-          <input id="R" type="number" step="1" value="287" />
-        </div>
-
-        <!-- Temps -->
-        <div class="input-group">
-          <label for="To4_max">T<sub>04,max</sub> [K]</label>
-          <input id="To4_max" type="number" step="1" value="1500" />
-        </div>
-        <div class="input-group">
-          <label for="To6_ab_max">T<sub>06,AB,max</sub> [K]</label>
-          <input id="To6_ab_max" type="number" step="1" value="2000" />
+          <label>R [J/(kg·K)]</label>
+          <input id="R" value="287">
         </div>
 
-        <!-- Fuel -->
         <div class="input-group">
-          <label for="hc">LHV h<sub>c</sub> [J/kg]</label>
-          <input id="hc" type="number" step="1000" value="43124000" />
+          <label>T<sub>04,max</sub></label>
+          <input id="To4_max" value="1500">
         </div>
         <div class="input-group">
-          <label for="f_st">f<sub>st</sub> (stoich)</label>
-          <input id="f_st" type="number" step="0.001" value="0.06" />
-        </div>
-
-        <!-- Efficiencies -->
-        <div class="input-group">
-          <label for="eta_d">η<sub>d</sub> (diffuser)</label>
-          <input id="eta_d" type="number" step="0.01" value="0.9" />
-        </div>
-        <div class="input-group">
-          <label for="eta_c">η<sub>c</sub> (compressor)</label>
-          <input id="eta_c" type="number" step="0.01" value="0.9" />
-        </div>
-        <div class="input-group">
-          <label for="eta_b">η<sub>b</sub> (burner)</label>
-          <input id="eta_b" type="number" step="0.01" value="0.98" />
-        </div>
-        <div class="input-group">
-          <label for="eta_t">η<sub>t</sub> (turbine)</label>
-          <input id="eta_t" type="number" step="0.01" value="0.92" />
-        </div>
-        <div class="input-group">
-          <label for="eta_n">η<sub>n</sub> (nozzle)</label>
-          <input id="eta_n" type="number" step="0.01" value="0.98" />
-        </div>
-        <div class="input-group">
-          <label for="eta_ab">η<sub>ab</sub> (afterburner)</label>
-          <input id="eta_ab" type="number" step="0.01" value="0.95" />
+          <label>T<sub>06,max,AB</sub></label>
+          <input id="To6_ab_max" value="2000">
         </div>
 
-        <!-- Pressure ratios -->
         <div class="input-group">
-          <label for="Rb">r<sub>b</sub> (burner P<sub>0</sub> ratio)</label>
-          <input id="Rb" type="number" step="0.001" value="0.97" />
+          <label>LHV (h<sub>c</sub>)</label>
+          <input id="hc" value="43124000">
         </div>
         <div class="input-group">
-          <label for="Rab">r<sub>ab</sub> (AB P<sub>0</sub> ratio)</label>
-          <input id="Rab" type="number" step="0.001" value="0.97" />
-        </div>
-
-        <!-- Gammas -->
-        <div class="input-group">
-          <label for="gam_1_3">γ (up to burner)</label>
-          <input id="gam_1_3" type="number" step="0.01" value="1.4" />
-        </div>
-        <div class="input-group">
-          <label for="gam_3_7">γ (rest of engine)</label>
-          <input id="gam_3_7" type="number" step="0.01" value="1.3" />
+          <label>f<sub>st</sub></label>
+          <input id="f_st" value="0.06">
         </div>
 
-        <!-- Rc range -->
-        <div class="input-group">
-          <label for="Rc_min">R<sub>c,min</sub></label>
-          <input id="Rc_min" type="number" step="1" value="2" />
-        </div>
-        <div class="input-group">
-          <label for="Rc_max">R<sub>c,max</sub></label>
-          <input id="Rc_max" type="number" step="1" value="60" />
-        </div>
+        <div class="input-group"><label>η<sub>d</sub></label><input id="eta_d" value="0.9"></div>
+        <div class="input-group"><label>η<sub>c</sub></label><input id="eta_c" value="0.9"></div>
+        <div class="input-group"><label>η<sub>b</sub></label><input id="eta_b" value="0.98"></div>
+        <div class="input-group"><label>η<sub>t</sub></label><input id="eta_t" value="0.92"></div>
+        <div class="input-group"><label>η<sub>n</sub></label><input id="eta_n" value="0.98"></div>
+        <div class="input-group"><label>η<sub>ab</sub></label><input id="eta_ab" value="0.95"></div>
+
+        <div class="input-group"><label>r<sub>b</sub></label><input id="Rb" value="0.97"></div>
+        <div class="input-group"><label>r<sub>ab</sub></label><input id="Rab" value="0.97"></div>
+
+        <div class="input-group"><label>γ (1–3)</label><input id="gam_1_3" value="1.4"></div>
+        <div class="input-group"><label>γ (3–7)</label><input id="gam_3_7" value="1.3"></div>
+
+        <div class="input-group"><label>R<sub>c,min</sub></label><input id="Rc_min" value="2"></div>
+        <div class="input-group"><label>R<sub>c,max</sub></label><input id="Rc_max" value="60"></div>
       </div>
 
       <div class="button-row">
         <button id="runBtn">Run Analysis</button>
-        <button class="secondary" id="resetBtn">Reset to Defaults</button>
+        <button class="secondary" id="resetBtn">Reset</button>
       </div>
-      <p class="note">
-        Outputs are relative (focus on trends and optima vs R<sub>c</sub>).
-      </p>
     </section>
 
     <!-- PLOTS -->
     <section class="card plots">
       <h2>Results</h2>
+
       <div class="plot-grid">
         <canvas id="thrustChart"></canvas>
         <canvas id="tsfcChart"></canvas>
@@ -252,513 +225,311 @@
     </section>
   </main>
 
+  <!-- SCRIPT BLOCK WITH ALL LOGIC -->
   <script>
-    // ---------- Utility: get defaults ----------
-    function getDefaultParams() {
-      return {
-        Pamb: 12112,
-        Tamb: 216.65,
-        Mach: 1.8,
-        R: 287,
-        To4_max: 1500,
-        To6_ab_max: 2000,
-        hc: 43124000,
-        f_st: 0.06,
-        eta_d: 0.9,
-        eta_c: 0.9,
-        eta_b: 0.98,
-        eta_t: 0.92,
-        eta_n: 0.98,
-        eta_ab: 0.95,
-        Rb: 0.97,
-        Rab: 0.97,
-        gam_1_3: 1.4,
-        gam_3_7: 1.3,
-        Rc_min: 2,
-        Rc_max: 60
-      };
-    }
+    function Cp(g, R) { return R / (1 - 1/g); }
 
-    // ---------- Read inputs from UI ----------
-    function readParamsFromUI() {
-      function val(id) {
-        return parseFloat(document.getElementById(id).value);
-      }
-      return {
-        Pamb: val("Pamb"),
-        Tamb: val("Tamb"),
-        Mach: val("Mach"),
-        R: val("R"),
-        To4_max: val("To4_max"),
-        To6_ab_max: val("To6_ab_max"),
-        hc: val("hc"),
-        f_st: val("f_st"),
-        eta_d: val("eta_d"),
-        eta_c: val("eta_c"),
-        eta_b: val("eta_b"),
-        eta_t: val("eta_t"),
-        eta_n: val("eta_n"),
-        eta_ab: val("eta_ab"),
-        Rb: val("Rb"),
-        Rab: val("Rab"),
-        gam_1_3: val("gam_1_3"),
-        gam_3_7: val("gam_3_7"),
-        Rc_min: Math.round(val("Rc_min")),
-        Rc_max: Math.round(val("Rc_max"))
-      };
-    }
-
-    // ---------- Write defaults back to UI ----------
-    function resetInputsToDefault() {
-      const d = getDefaultParams();
-      for (const [k, v] of Object.entries(d)) {
-        const el = document.getElementById(k);
-        if (el) el.value = v;
-      }
-    }
-
-    // ---------- Core thermodynamic helpers ----------
-    function CpFromGammaR(gam, R) {
-      return R / (1 - 1 / gam);
-    }
-
-    // For given T/T0 and gamma, get Mach using T/T0 = 1 / (1 + (gamma-1)M^2/2)
-    function machFromTempRatio(TR, gam) {
-      // TR = T / T0
-      if (TR <= 0 || TR >= 1) {
-        return 0;
-      }
-      const M2 = (2 / (gam - 1)) * (1 / TR - 1);
+    function machFromTR(TR, g) {
+      if (TR <= 0 || TR >= 1) return 0;
+      const M2 = (2/(g-1))*(1/TR - 1);
       return M2 > 0 ? Math.sqrt(M2) : 0;
     }
 
-    // ---------- Cycle: no afterburner ----------
-    function cycleNoAB(Rc, p) {
-      const {
-        Pamb, Tamb, Mach, R,
-        To4_max, hc, f_st,
-        eta_d, eta_c, eta_b, eta_t, eta_n,
-        Rb, gam_1_3, gam_3_7
-      } = p;
-
-      // Ambient (a -> 1)
-      let gam = gam_1_3;
-      const Poa_Pamb = Math.pow(1 + (gam - 1) * 0.5 * Mach * Mach, gam / (gam - 1));
-      const Toa_Tamb = 1 + (gam - 1) * 0.5 * Mach * Mach;
-      const Poa = Poa_Pamb * Pamb;
-      const Toa = Toa_Tamb * Tamb;
-      const V = Mach * Math.sqrt(gam * R * Tamb);
-
-      // Diffuser (1 -> 2)
-      const To2 = Toa;
-      const To2s = Tamb + eta_d * (To2 - Tamb);
-      const Po2 = Math.pow(To2s / Tamb, gam / (gam - 1)) * Pamb;
-
-      // Compressor (2 -> 3)
-      const To3s = Math.pow(Rc, (gam - 1) / gam) * To2;
-      const Po3 = Rc * Po2;
-      const To3 = To2 + (To3s - To2) / eta_c;
-      const Cp1 = CpFromGammaR(gam, R);
-      const Wc_in = Cp1 * (To3 - To2);
-
-      // Burner (3 -> 4)
-      gam = gam_3_7;
-      const Cp2 = CpFromGammaR(gam, R);
-
-      const f_possible =
-        ((To4_max / To3) - 1) /
-        ((eta_b * hc / (Cp2 * To3)) - (To4_max / To3));
-
-      let fb, To4;
-      if (f_possible > f_st) {
-        fb = f_st;
-        // Closed-form T04 from fb:
-        To4 = (Cp2 * To3 + eta_b * fb * hc) / (Cp2 * (1 + fb));
-      } else {
-        fb = f_possible;
-        To4 = To4_max;
-      }
-
-      const Po4 = Rb * Po3;
-
-      // Turbine (4 -> 5): Wt_out = Wc_in
-      const To5 = To4 - Wc_in / ((1 + fb) * Cp2);
-      const To5s = To4 - eta_t * (To4 - To5);
-      const Po5 = Math.pow(To5s / To4, gam / (gam - 1)) * Po4;
-
-      // Nozzle (5 -> 7)
-      const Po6 = Po5;
-      const P7 = Pamb;
-      const To6 = To5;
-      const To7 = To6;
-      const T7s = To6 / Math.pow(Po6 / P7, (gam - 1) / gam);
-      const T7 = To6 - eta_n * (To6 - T7s);
-      const TR = T7 / To7;
-      const Mexit = machFromTempRatio(TR, gam);
-      const Vexit = Mexit * Math.sqrt(gam * R * T7);
-
-      const I = (1 + fb) * Vexit - V;
-      const TSFC = fb / I;
-
-      let Ae_At = 0;
-      if (Mexit > 0) {
-        Ae_At =
-          (1 / Mexit) *
-          Math.pow(
-            (2 / (gam + 1)) * (1 + (gam - 1) * 0.5 * Mexit * Mexit),
-            (gam + 1) / (2 * (gam - 1))
-          );
-      }
-
-      const eta_p = (I * V) / ((1 + fb) * (Vexit * Vexit / 2) - (V * V) / 2);
-      const eta_th = ((1 + fb) * Vexit * Vexit - V * V) / (2 * fb * hc);
-      const eta_o = eta_p * eta_th;
-
-      return { I, TSFC, Ae_At, eta_p, eta_th, eta_o };
+    function read() {
+      const v = id => parseFloat(document.getElementById(id).value);
+      return {
+        Pamb:v("Pamb"), Tamb:v("Tamb"), Mach:v("Mach"), R:v("R"),
+        To4_max:v("To4_max"), To6_ab_max:v("To6_ab_max"),
+        hc:v("hc"), f_st:v("f_st"),
+        eta_d:v("eta_d"), eta_c:v("eta_c"), eta_b:v("eta_b"),
+        eta_t:v("eta_t"), eta_n:v("eta_n"), eta_ab:v("eta_ab"),
+        Rb:v("Rb"), Rab:v("Rab"),
+        gam_1_3:v("gam_1_3"), gam_3_7:v("gam_3_7"),
+        Rc_min:v("Rc_min"), Rc_max:v("Rc_max")
+      };
     }
 
-    // ---------- Cycle: with afterburner ----------
-    function cycleAB(Rc, p) {
-      const {
-        Pamb, Tamb, Mach, R,
-        To4_max, To6_ab_max, hc, f_st,
-        eta_d, eta_c, eta_b, eta_t, eta_n, eta_ab,
-        Rb, Rab, gam_1_3, gam_3_7
-      } = p;
-
-      // Ambient (a -> 1)
-      let gam = gam_1_3;
-      const Poa_Pamb = Math.pow(1 + (gam - 1) * 0.5 * Mach * Mach, gam / (gam - 1));
-      const Toa_Tamb = 1 + (gam - 1) * 0.5 * Mach * Mach;
-      const Poa = Poa_Pamb * Pamb;
-      const Toa = Toa_Tamb * Tamb;
-      const V = Mach * Math.sqrt(gam * R * Tamb);
-
-      // Diffuser (1 -> 2)
-      const To2 = Toa;
-      const To2s = Tamb + eta_d * (To2 - Tamb);
-      const Po2 = Math.pow(To2s / Tamb, gam / (gam - 1)) * Pamb;
-
-      // Compressor (2 -> 3)
-      const To3s = Math.pow(Rc, (gam - 1) / gam) * To2;
-      const Po3 = Rc * Po2;
-      const To3 = To2 + (To3s - To2) / eta_c;
-      const Cp1 = CpFromGammaR(gam, R);
-      const Wc_in = Cp1 * (To3 - To2);
-
-      // Burner (3 -> 4)
-      gam = gam_3_7;
-      const Cp2 = CpFromGammaR(gam, R);
-      const f_possible =
-        ((To4_max / To3) - 1) /
-        ((eta_b * hc / (Cp2 * To3)) - (To4_max / To3));
-
-      let fb, To4;
-      if (f_possible > f_st) {
-        fb = f_st;
-        To4 = (Cp2 * To3 + eta_b * fb * hc) / (Cp2 * (1 + fb));
-      } else {
-        fb = f_possible;
-        To4 = To4_max;
-      }
-
-      const Po4 = Rb * Po3;
-
-      // Turbine (4 -> 5)
-      const To5 = To4 - Wc_in / ((1 + fb) * Cp2);
-      const To5s = To4 - eta_t * (To4 - To5);
-      const Po5 = Math.pow(To5s / To4, gam / (gam - 1)) * Po4;
-
-      // Afterburner (5 -> 6)
-      let f_ab_unclipped =
-        (1 + fb) * (To6_ab_max - To5) /
-        ((eta_ab * hc / Cp2) - To6_ab_max);
-
-      let f_ab, To6;
-      if (fb + f_ab_unclipped > f_st) {
-        f_ab = f_st - fb;
-        // Closed-form To6 for given f_ab:
-        To6 =
-          (Cp2 * To5 * (1 + fb) + eta_ab * f_ab * hc) /
-          (Cp2 * (1 + fb + f_ab));
-      } else {
-        f_ab = f_ab_unclipped;
-        To6 = To6_ab_max;
-      }
-
-      const fb_total = fb + f_ab;
-      const Po6 = Rab * Po5;
-
-      // Nozzle (6 -> 7)
-      const P7 = Pamb;
-      const To7 = To6;
-      const T7s = To6 / Math.pow(Po6 / P7, (gam - 1) / gam);
-      const T7 = To6 - eta_n * (To6 - T7s);
-      const TR = T7 / To7;
-      const Mexit = machFromTempRatio(TR, gam);
-      const Vexit = Mexit * Math.sqrt(gam * R * T7);
-
-      const I = (1 + fb_total) * Vexit - V;
-      const TSFC = fb_total / I;
-
-      let Ae_At = 0;
-      if (Mexit > 0) {
-        Ae_At =
-          (1 / Mexit) *
-          Math.pow(
-            (2 / (gam + 1)) * (1 + (gam - 1) * 0.5 * Mexit * Mexit),
-            (gam + 1) / (2 * (gam - 1))
-          );
-      }
-
-      const eta_p = (I * V) / ((1 + fb_total) * (Vexit * Vexit / 2) - (V * V) / 2);
-      const eta_th = ((1 + fb_total) * Vexit * Vexit - V * V) / (2 * fb_total * hc);
-      const eta_o = eta_p * eta_th;
-
-      return { I, TSFC, Ae_At, eta_p, eta_th, eta_o };
+    function defaults() {
+      return {
+        Pamb:12112, Tamb:216.65, Mach:1.8, R:287,
+        To4_max:1500, To6_ab_max:2000,
+        hc:43124000, f_st:0.06,
+        eta_d:0.9, eta_c:0.9, eta_b:0.98,
+        eta_t:0.92, eta_n:0.98, eta_ab:0.95,
+        Rb:0.97, Rab:0.97,
+        gam_1_3:1.4, gam_3_7:1.3,
+        Rc_min:2, Rc_max:60
+      };
     }
 
-    // ---------- Run analysis across Rc range ----------
-    function runAnalysis(params) {
-      const Rc_min = Math.max(1, params.Rc_min);
-      const Rc_max = Math.max(Rc_min, params.Rc_max);
+    function resetInputs() {
+      const d = defaults();
+      Object.entries(d).forEach(([k,v])=>{
+        const el=document.getElementById(k);
+        if(el) el.value=v;
+      });
+    }
+
+    function cycleNoAB(Rc,p){  
+      let { Pamb,Tamb,Mach,R,To4_max,hc,f_st,eta_d,eta_c,eta_b,eta_t,eta_n,Rb,gam_1_3,gam_3_7 }=p;
+
+      let g=gam_1_3;
+      let Poa_P = Math.pow(1+0.5*(g-1)*Mach*Mach, g/(g-1));
+      let Toa_T = 1+0.5*(g-1)*Mach*Mach;
+      let Poa=Poa_P*Pamb, Toa=Toa_T*Tamb;
+      let V = Mach*Math.sqrt(g*R*Tamb);
+
+      let To2=Toa;
+      let To2s=Tamb+eta_d*(To2-Tamb);
+      let Po2=Math.pow(To2s/Tamb, g/(g-1))*Pamb;
+
+      let To3s=Math.pow(Rc,(g-1)/g)*To2;
+      let Po3=Rc*Po2;
+      let To3=To2+(To3s-To2)/eta_c;
+      let Cp1=Cp(g,R);
+      let Wc=Cp1*(To3-To2);
+
+      g=gam_3_7;
+      let Cp2=Cp(g,R);
+
+      let fpos=((To4_max/To3)-1)/((eta_b*hc/(Cp2*To3))-(To4_max/To3));
+      let fb,To4;
+      if(fpos>f_st){
+        fb=f_st;
+        To4=(Cp2*To3+eta_b*fb*hc)/(Cp2*(1+fb));
+      } else {
+        fb=fpos; To4=To4_max;
+      }
+
+      let Po4=Rb*Po3;
+
+      let To5 = To4 - Wc/((1+fb)*Cp2);
+      let To5s = To4 - eta_t*(To4-To5);
+      let Po5 = Math.pow(To5s/To4, g/(g-1))*Po4;
+
+      let Po6=Po5, P7=Pamb;
+      let To6=To5, To7=To6;
+      let T7s = To6/Math.pow(Po6/P7,(g-1)/g);
+      let T7 = To6 - eta_n*(To6-T7s);
+
+      let TR=T7/To7;
+      let M7=machFromTR(TR,g);
+      let V7=M7*Math.sqrt(g*R*T7);
+
+      let I=(1+fb)*V7 - V;
+      let TSFC=fb/I;
+      let Ae_At = (M7>0) ? (1/M7)*Math.pow((2/(g+1))*(1+0.5*(g-1)*M7*M7),(g+1)/(2*(g-1))) : 0;
+      let etap = (I*V)/((1+fb)*(V7*V7/2)-V*V/2);
+      let etath = ((1+fb)*V7*V7 - V*V)/(2*fb*hc);
+      let etao = etap*etath;
+
+      return {I,TSFC,Ae_At,eta_p:etap,eta_th:etath,eta_o:etao};
+    }
+
+    function cycleAB(Rc,p){
+      let { Pamb,Tamb,Mach,R,To4_max,To6_ab_max,hc,f_st,eta_d,eta_c,eta_b,eta_t,eta_n,eta_ab,Rb,Rab,gam_1_3,gam_3_7 }=p;
+
+      let g=gam_1_3;
+      let Poa_P = Math.pow(1+0.5*(g-1)*Mach*Mach, g/(g-1));
+      let Toa_T = 1+0.5*(g-1)*Mach*Mach;
+      let Poa=Poa_P*Pamb, Toa=Toa_T*Tamb;
+      let V = Mach*Math.sqrt(g*R*Tamb);
+
+      let To2=Toa;
+      let To2s=Tamb+eta_d*(To2-Tamb);
+      let Po2=Math.pow(To2s/Tamb, g/(g-1))*Pamb;
+
+      let To3s=Math.pow(Rc,(g-1)/g)*To2;
+      let Po3=Rc*Po2;
+      let To3=To2+(To3s-To2)/eta_c;
+      let Cp1=Cp(g,R);
+      let Wc=Cp1*(To3-To2);
+
+      g=gam_3_7;
+      let Cp2=Cp(g,R);
+
+      let fpos=((To4_max/To3)-1)/((eta_b*hc/(Cp2*To3))-(To4_max/To3));
+      let fb,To4;
+      if(fpos>f_st){
+        fb=f_st;
+        To4=(Cp2*To3+eta_b*fb*hc)/(Cp2*(1+fb));
+      } else {
+        fb=fpos; To4=To4_max;
+      }
+
+      let Po4=Rb*Po3;
+
+      let To5 = To4 - Wc/((1+fb)*Cp2);
+      let To5s = To4 - eta_t*(To4-To5);
+      let Po5 = Math.pow(To5s/To4, g/(g-1))*Po4;
+
+      let fab_unc = (1+fb)*(To6_ab_max-To5)/((eta_ab*hc/Cp2) - To6_ab_max);
+      let fab,To6;
+
+      if(fb+fab_unc>f_st){
+        fab=f_st-fb;
+        To6 = (Cp2*To5*(1+fb) + eta_ab*fab*hc)/(Cp2*(1+fb+fab));
+      } else {
+        fab=fab_unc; To6=To6_ab_max;
+      }
+
+      let fbTot=fb+fab;
+      let Po6=Rab*Po5;
+
+      let P7=Pamb, To7=To6;
+      let T7s=To6/Math.pow(Po6/P7,(g-1)/g);
+      let T7=To6-eta_n*(To6-T7s);
+
+      let TR=T7/To7;
+      let M7=machFromTR(TR,g);
+      let V7=M7*Math.sqrt(g*R*T7);
+
+      let I=(1+fbTot)*V7 - V;
+      let TSFC=fbTot/I;
+      let Ae_At = (M7>0) ? (1/M7)*Math.pow((2/(g+1))*(1+0.5*(g-1)*M7*M7),(g+1)/(2*(g-1))) : 0;
+      let etap = (I*V)/((1+fbTot)*(V7*V7/2)-V*V/2);
+      let etath = ((1+fbTot)*V7*V7 - V*V)/(2*fbTot*hc);
+      let etao = etap*etath;
+
+      return {I,TSFC,Ae_At,eta_p:etap,eta_th:etath,eta_o:etao};
+    }
+
+    function run(p){
+      const Rmin = Math.round(p.Rc_min);
+      const Rmax = Math.round(p.Rc_max);
 
       const Rc = [];
-      const I = [], I_AB = [];
-      const TSFC = [], TSFC_AB = [];
-      const Ae_At = [], Ae_At_AB = [];
-      const eta_p = [], eta_th = [], eta_o = [];
-      const eta_p_AB = [], eta_th_AB = [], eta_o_AB = [];
+      const I=[],TSFC=[],Ae=[],ep=[],eth=[],eo=[];
+      const I2=[],TSFC2=[],Ae2=[],ep2=[],eth2=[],eo2=[];
 
-      for (let rc = Rc_min; rc <= Rc_max; rc++) {
+      for(let rc=Rmin; rc<=Rmax; rc++){
         Rc.push(rc);
+        let a=cycleNoAB(rc,p);
+        let b=cycleAB(rc,p);
 
-        const noAB = cycleNoAB(rc, params);
-        const ab   = cycleAB(rc, params);
-
-        I.push(noAB.I);
-        TSFC.push(noAB.TSFC);
-        Ae_At.push(noAB.Ae_At);
-        eta_p.push(noAB.eta_p);
-        eta_th.push(noAB.eta_th);
-        eta_o.push(noAB.eta_o);
-
-        I_AB.push(ab.I);
-        TSFC_AB.push(ab.TSFC);
-        Ae_At_AB.push(ab.Ae_At);
-        eta_p_AB.push(ab.eta_p);
-        eta_th_AB.push(ab.eta_th);
-        eta_o_AB.push(ab.eta_o);
+        I.push(a.I);      I2.push(b.I);
+        TSFC.push(a.TSFC);TSFC2.push(b.TSFC);
+        Ae.push(a.Ae_At); Ae2.push(b.Ae_At);
+        ep.push(a.eta_p); ep2.push(b.eta_p);
+        eth.push(a.eta_th);eth2.push(b.eta_th);
+        eo.push(a.eta_o); eo2.push(b.eta_o);
       }
 
-      return {
-        Rc,
-        I, TSFC, Ae_At, eta_p, eta_th, eta_o,
-        I_AB, TSFC_AB, Ae_At_AB, eta_p_AB, eta_th_AB, eta_o_AB
-      };
+      return {Rc,I,TSFC,Ae,ep,eth,eo,I2,TSFC2,Ae2,ep2,eth2,eo2};
     }
 
-    // ---------- Chart setup ----------
-    let thrustChart, tsfcChart, areaChart, etaNoABChart, etaABChart;
+    let thrustChart,tsfcChart,areaChart,eta1Chart,eta2Chart;
 
-    function createOrUpdateChart(chartRef, ctx, config) {
-      if (chartRef) {
-        chartRef.data = config.data;
-        chartRef.options = config.options;
-        chartRef.update();
-        return chartRef;
-      } else {
-        return new Chart(ctx, config);
-      }
+    function makeChart(old,ctx,data){
+      if(old){ old.data=data.data; old.options=data.options; old.update(); return old; }
+      return new Chart(ctx,data);
     }
 
-    function updatePlots(results) {
-      const {
-        Rc,
-        I, TSFC, Ae_At, eta_p, eta_th, eta_o,
-        I_AB, TSFC_AB, Ae_At_AB, eta_p_AB, eta_th_AB, eta_o_AB
-      } = results;
-
-      // 1) Specific thrust
-      const thrustCfg = {
-        type: "line",
-        data: {
-          labels: Rc,
-          datasets: [
-            { label: "I (no AB)", data: I, borderWidth: 2, fill: false },
-            { label: "I (with AB)", data: I_AB, borderWidth: 2, fill: false }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { labels: { color: "#e5e7eb" } },
-            title: {
-              display: true,
-              text: "Specific Thrust vs Compressor Total Pressure Ratio",
-              color: "#e5e7eb"
-            }
-          },
-          scales: {
-            x: { title: { display: true, text: "R_c", color: "#9ca3af" }, ticks: { color: "#9ca3af" } },
-            y: { title: { display: true, text: "I (m/s equivalent)", color: "#9ca3af" }, ticks: { color: "#9ca3af" } }
-          }
-        }
+    function updatePlots(r){
+      const commonScales = {
+        x:{ticks:{color:"#9ca3af"}, title:{display:true,text:"R_c",color:"#9ca3af"}},
+        y:{ticks:{color:"#9ca3af"}, title:{display:true,text:"",color:"#9ca3af"}}
       };
-      thrustChart = createOrUpdateChart(
-        thrustChart,
+
+      thrustChart = makeChart(thrustChart,
         document.getElementById("thrustChart"),
-        thrustCfg
-      );
-
-      // 2) TSFC
-      const tsfcCfg = {
-        type: "line",
-        data: {
-          labels: Rc,
-          datasets: [
-            { label: "TSFC (no AB)", data: TSFC, borderWidth: 2, fill: false },
-            { label: "TSFC (with AB)", data: TSFC_AB, borderWidth: 2, fill: false }
+      {
+        type:"line",
+        data:{
+          labels:r.Rc,
+          datasets:[
+            {label:"I (no AB)",data:r.I,borderWidth:2},
+            {label:"I (with AB)",data:r.I2,borderWidth:2}
           ]
         },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { labels: { color: "#e5e7eb" } },
-            title: {
-              display: true,
-              text: "TSFC vs Compressor Total Pressure Ratio",
-              color: "#e5e7eb"
-            }
-          },
-          scales: {
-            x: { title: { display: true, text: "R_c", color: "#9ca3af" }, ticks: { color: "#9ca3af" } },
-            y: { title: { display: true, text: "TSFC (kg/(N·s)) (relative)", color: "#9ca3af" }, ticks: { color: "#9ca3af" } }
-          }
+        options:{
+          plugins:{legend:{labels:{color:"#e5e7eb"}},title:{display:true,text:"Specific Thrust",color:"#e5e7eb"}},
+          scales:commonScales
         }
-      };
-      tsfcChart = createOrUpdateChart(
-        tsfcChart,
+      });
+
+      tsfcChart = makeChart(tsfcChart,
         document.getElementById("tsfcChart"),
-        tsfcCfg
-      );
-
-      // 3) Ae/At
-      const areaCfg = {
-        type: "line",
-        data: {
-          labels: Rc,
-          datasets: [
-            { label: "Ae/At (no AB)", data: Ae_At, borderWidth: 2, fill: false },
-            { label: "Ae/At (with AB)", data: Ae_At_AB, borderWidth: 2, fill: false }
+      {
+        type:"line",
+        data:{
+          labels:r.Rc,
+          datasets:[
+            {label:"TSFC (no AB)",data:r.TSFC,borderWidth:2},
+            {label:"TSFC (with AB)",data:r.TSFC2,borderWidth:2}
           ]
         },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { labels: { color: "#e5e7eb" } },
-            title: {
-              display: true,
-              text: "Nozzle Area Ratio Ae/At vs Compressor Total Pressure Ratio",
-              color: "#e5e7eb"
-            }
-          },
-          scales: {
-            x: { title: { display: true, text: "R_c", color: "#9ca3af" }, ticks: { color: "#9ca3af" } },
-            y: { title: { display: true, text: "Ae/At", color: "#9ca3af" }, ticks: { color: "#9ca3af" } }
-          }
+        options:{
+          plugins:{legend:{labels:{color:"#e5e7eb"}},title:{display:true,text:"TSFC",color:"#e5e7eb"}},
+          scales:commonScales
         }
-      };
-      areaChart = createOrUpdateChart(
-        areaChart,
+      });
+
+      areaChart = makeChart(areaChart,
         document.getElementById("areaChart"),
-        areaCfg
-      );
-
-      // 4) Efficiencies no AB
-      const etaNoCfg = {
-        type: "line",
-        data: {
-          labels: Rc,
-          datasets: [
-            { label: "η_p (no AB)", data: eta_p, borderWidth: 2, fill: false },
-            { label: "η_th (no AB)", data: eta_th, borderWidth: 2, fill: false },
-            { label: "η_o (no AB)", data: eta_o, borderWidth: 2, fill: false }
+      {
+        type:"line",
+        data:{
+          labels:r.Rc,
+          datasets:[
+            {label:"Ae/At (no AB)",data:r.Ae,borderWidth:2},
+            {label:"Ae/At (with AB)",data:r.Ae2,borderWidth:2}
           ]
         },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { labels: { color: "#e5e7eb" } },
-            title: {
-              display: true,
-              text: "Efficiencies (No Afterburner)",
-              color: "#e5e7eb"
-            }
-          },
-          scales: {
-            x: { title: { display: true, text: "R_c", color: "#9ca3af" }, ticks: { color: "#9ca3af" } },
-            y: { title: { display: true, text: "Efficiency", color: "#9ca3af" }, min: 0, max: 1.2,
-                 ticks: { color: "#9ca3af" } }
-          }
+        options:{
+          plugins:{legend:{labels:{color:"#e5e7eb"}},title:{display:true,text:"Nozzle Area Ratio",color:"#e5e7eb"}},
+          scales:commonScales
         }
-      };
-      etaNoABChart = createOrUpdateChart(
-        etaNoABChart,
+      });
+
+      eta1Chart = makeChart(eta1Chart,
         document.getElementById("etaNoABChart"),
-        etaNoCfg
-      );
-
-      // 5) Efficiencies with AB
-      const etaABCfg = {
-        type: "line",
-        data: {
-          labels: Rc,
-          datasets: [
-            { label: "η_p (with AB)", data: eta_p_AB, borderWidth: 2, fill: false },
-            { label: "η_th (with AB)", data: eta_th_AB, borderWidth: 2, fill: false },
-            { label: "η_o (with AB)", data: eta_o_AB, borderWidth: 2, fill: false }
+      {
+        type:"line",
+        data:{
+          labels:r.Rc,
+          datasets:[
+            {label:"η_p",data:r.ep,borderWidth:2},
+            {label:"η_th",data:r.eth,borderWidth:2},
+            {label:"η_o",data:r.eo,borderWidth:2}
           ]
         },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { labels: { color: "#e5e7eb" } },
-            title: {
-              display: true,
-              text: "Efficiencies (With Afterburner)",
-              color: "#e5e7eb"
-            }
-          },
-          scales: {
-            x: { title: { display: true, text: "R_c", color: "#9ca3af" }, ticks: { color: "#9ca3af" } },
-            y: { title: { display: true, text: "Efficiency", color: "#9ca3af" }, min: 0, max: 1.2,
-                 ticks: { color: "#9ca3af" } }
-          }
+        options:{
+          plugins:{legend:{labels:{color:"#e5e7eb"}},title:{display:true,text:"Efficiencies (No AB)",color:"#e5e7eb"}},
+          scales:commonScales
         }
-      };
-      etaABChart = createOrUpdateChart(
-        etaABChart,
+      });
+
+      eta2Chart = makeChart(eta2Chart,
         document.getElementById("etaABChart"),
-        etaABCfg
-      );
+      {
+        type:"line",
+        data:{
+          labels:r.Rc,
+          datasets:[
+            {label:"η_p",data:r.ep2,borderWidth:2},
+            {label:"η_th",data:r.eth2,borderWidth:2},
+            {label:"η_o",data:r.eo2,borderWidth:2}
+          ]
+        },
+        options:{
+          plugins:{legend:{labels:{color:"#e5e7eb"}},title:{display:true,text:"Efficiencies (With AB)",color:"#e5e7eb"}},
+          scales:commonScales
+        }
+      });
     }
 
-    // ---------- Wire up buttons ----------
-    document.getElementById("runBtn").addEventListener("click", () => {
-      const params = readParamsFromUI();
-      const results = runAnalysis(params);
-      updatePlots(results);
-    });
+    document.getElementById("runBtn").onclick = ()=>{
+      const p = read();
+      updatePlots(run(p));
+    };
 
-    document.getElementById("resetBtn").addEventListener("click", () => {
-      resetInputsToDefault();
-    });
+    document.getElementById("resetBtn").onclick = ()=>{
+      resetInputs();
+    };
 
-    // Initial run with defaults
-    resetInputsToDefault();
-    const initialResults = runAnalysis(getDefaultParams());
-    updatePlots(initialResults);
+    resetInputs();
+    updatePlots(run(defaults()));
   </script>
 </body>
 </html>
